@@ -21,6 +21,7 @@ export const CreateTaskDialog = ({ onCreateTask, projects }: CreateTaskDialogPro
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [projectId, setProjectId] = useState('');
   const [labels, setLabels] = useState('');
+  const [estimatedDuration, setEstimatedDuration] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +36,8 @@ export const CreateTaskDialog = ({ onCreateTask, projects }: CreateTaskDialogPro
       labels: labels.split(',').map(l => l.trim()).filter(Boolean),
       projectId: projectId || undefined,
       completed: false,
+      estimatedDuration: estimatedDuration ? parseInt(estimatedDuration) : undefined,
+      subtasks: [],
     };
 
     onCreateTask(newTask);
@@ -46,6 +49,7 @@ export const CreateTaskDialog = ({ onCreateTask, projects }: CreateTaskDialogPro
     setPriority('medium');
     setProjectId('');
     setLabels('');
+    setEstimatedDuration('');
     setOpen(false);
   };
 
@@ -149,19 +153,36 @@ export const CreateTaskDialog = ({ onCreateTask, projects }: CreateTaskDialogPro
             </div>
           )}
 
-          {/* Labels */}
-          <div>
-            <Label htmlFor="labels" className="text-sm font-medium flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Labels
-            </Label>
-            <Input
-              id="labels"
-              value={labels}
-              onChange={(e) => setLabels(e.target.value)}
-              placeholder="college, personal, urgent (comma-separated)"
-              className="mt-1"
-            />
+          {/* Labels and Time Estimation */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="labels" className="text-sm font-medium flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                Labels
+              </Label>
+              <Input
+                id="labels"
+                value={labels}
+                onChange={(e) => setLabels(e.target.value)}
+                placeholder="college, personal, urgent"
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="duration" className="text-sm font-medium">
+                Est. Duration (min)
+              </Label>
+              <Input
+                id="duration"
+                type="number"
+                value={estimatedDuration}
+                onChange={(e) => setEstimatedDuration(e.target.value)}
+                placeholder="60"
+                min="1"
+                className="mt-1"
+              />
+            </div>
           </div>
 
           {/* Submit */}

@@ -1,60 +1,43 @@
-import { useState } from 'react';
-import { Clock, Calendar, Flag, CheckCircle2, Circle, MoreVertical, Edit, Trash2 } from 'lucide-react';
-import { Task } from '../types';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, Edit, Trash2, CheckCircle2, Circle, Timer, Target, MoreVertical } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { CountdownTimer } from './CountdownTimer';
+import { SubtaskManager } from './SubtaskManager';
+import { Task } from '../types';
 
 interface TaskCardProps {
   task: Task;
   onToggleComplete: (taskId: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
+  onUpdateSubtasks?: (taskId: string, subtasks: Task['subtasks']) => void;
 }
 
-export const TaskCard = ({ task, onToggleComplete, onEdit, onDelete }: TaskCardProps) => {
-  const [timeLeft, setTimeLeft] = useState('');
+export const TaskCard = ({ task, onToggleComplete, onEdit, onDelete, onUpdateSubtasks }: TaskCardProps) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Calculate time remaining
-  const updateTimeLeft = () => {
-    const now = new Date().getTime();
-    const dueTime = new Date(task.dueDate).getTime();
-    const difference = dueTime - now;
-
-    if (difference > 0) {
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-
-      if (days > 0) {
-        setTimeLeft(`${days}d ${hours}h`);
-      } else if (hours > 0) {
-        setTimeLeft(`${hours}h ${minutes}m`);
-      } else {
-        setTimeLeft(`${minutes}m`);
-      }
-    } else {
-      setTimeLeft('Overdue');
+  const handleUpdateSubtasks = (subtasks: Task['subtasks']) => {
+    if (onUpdateSubtasks) {
+      onUpdateSubtasks(task.id, subtasks);
     }
   };
 
-  // Update countdown every minute
-  useState(() => {
-    updateTimeLeft();
-    const interval = setInterval(updateTimeLeft, 60000);
-    return () => clearInterval(interval);
-  });
+  const isOverdue = !task.completed && new Date() > task.dueDate;
+  const completedSubtasks = task.subtasks?.filter(s => s.completed).length || 0;
+  const totalSubtasks = task.subtasks?.length || 0;
+  const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
-  const getPriorityClass = () => {
-    switch (task.priority) {
-      case 'high': return 'priority-high';
-      case 'medium': return 'priority-medium';
-      case 'low': return 'priority-low';
-      default: return '';
-    }
-  };
-
-  const getPriorityColor = () => {
-    switch (task.priority) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
       case 'high': return 'text-destructive';
       case 'medium': return 'text-warning';
       case 'low': return 'text-accent';
@@ -62,115 +45,131 @@ export const TaskCard = ({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
     }
   };
 
-  const isOverdue = new Date(task.dueDate) < new Date() && !task.completed;
-
   return (
-    <div className={`cyber-card ${getPriorityClass()} ${task.completed ? 'opacity-60' : ''} group`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3 flex-1">
-          {/* Completion Toggle */}
-          <button
-            onClick={() => onToggleComplete(task.id)}
-            className="mt-1 transition-all duration-200 hover:scale-110"
-          >
-            {task.completed ? (
-              <CheckCircle2 className="w-5 h-5 text-accent" />
-            ) : (
-              <Circle className="w-5 h-5 text-muted-foreground hover:text-primary" />
-            )}
-          </button>
-
-          {/* Task Content */}
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-              {task.title}
-            </h3>
-            {task.description && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                {task.description}
-              </p>
-            )}
-
-            {/* Labels */}
-            {task.labels.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {task.labels.map((label) => (
-                  <span 
-                    key={label}
-                    className="px-2 py-1 text-xs rounded-full bg-secondary/20 text-secondary border border-secondary/30"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Task Meta */}
-            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-              </div>
+    <Card className={`cyber-card transition-all hover:scale-[1.02] ${task.completed ? 'opacity-60' : ''} ${isOverdue ? 'border-destructive/50' : ''} group`}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3 flex-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleComplete(task.id)}
+              className={`h-8 w-8 p-0 rounded-full border-2 transition-all ${
+                task.completed
+                  ? 'bg-primary border-primary text-primary-foreground hover:bg-primary/90'
+                  : isOverdue
+                  ? 'border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground'
+                  : 'border-primary/50 hover:border-primary hover:bg-primary/10'
+              }`}
+            >
+              {task.completed ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                <Circle className="w-4 h-4" />
+              )}
+            </Button>
+            
+            <div className="flex-1 min-w-0">
+              <h3
+                className={`font-medium text-base transition-all ${
+                  task.completed
+                    ? 'text-muted-foreground line-through'
+                    : isOverdue
+                    ? 'text-destructive'
+                    : 'text-foreground'
+                }`}
+              >
+                {task.title}
+              </h3>
               
-              <div className={`flex items-center gap-1 ${isOverdue ? 'text-destructive' : ''}`}>
-                <Clock className="w-4 h-4" />
-                <span className={isOverdue ? 'font-medium' : ''}>{timeLeft}</span>
-              </div>
-
-              <div className={`flex items-center gap-1 ${getPriorityColor()}`}>
-                <Flag className="w-4 h-4" />
-                <span className="capitalize">{task.priority}</span>
-              </div>
-            </div>
-
-            {/* Progress for subtasks */}
-            {task.subtasks && task.subtasks.length > 0 && (
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                  <span>Subtasks</span>
-                  <span>
-                    {task.subtasks.filter(st => st.completed).length} / {task.subtasks.length}
+              {task.description && (
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  {task.description}
+                </p>
+              )}
+              
+              {/* Subtask Progress */}
+              {totalSubtasks > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex-1">
+                    <Progress value={subtaskProgress} className="h-2" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {completedSubtasks}/{totalSubtasks}
                   </span>
                 </div>
-                <div className="progress-bar h-2">
-                  <div 
-                    className="progress-fill h-2" 
-                    style={{ 
-                      width: `${(task.subtasks.filter(st => st.completed).length / task.subtasks.length) * 100}%` 
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+
+          {/* Actions Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => onEdit(task)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Task
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onDelete(task.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Task
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Task Metadata */}
+        <div className="flex flex-wrap items-center gap-3 mt-4">
+          <CountdownTimer 
+            dueDate={task.dueDate} 
+            priority={task.priority}
+            className="flex-shrink-0"
+          />
+          
+          {task.estimatedDuration && (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Timer className="w-4 h-4" />
+              <span className="text-sm">{task.estimatedDuration}min</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1">
+            <Target className={`w-4 h-4 ${getPriorityColor(task.priority)}`} />
+            <span className={`text-sm font-medium ${getPriorityColor(task.priority)}`}>
+              {task.priority.toUpperCase()}
+            </span>
           </div>
         </div>
 
-        {/* Actions Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => onEdit(task)}>
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Task
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => onDelete(task.id)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Task
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </div>
+        {/* Subtask Manager */}
+        <SubtaskManager
+          subtasks={task.subtasks || []}
+          onUpdateSubtasks={handleUpdateSubtasks}
+          taskCompleted={task.completed}
+        />
+
+        {/* Labels */}
+        {task.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3">
+            {task.labels.map((label) => (
+              <Badge key={label} variant="secondary" className="text-xs">
+                {label}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

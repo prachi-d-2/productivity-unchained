@@ -7,11 +7,13 @@ import { ProjectCard } from '../components/ProjectCard';
 import { AchievementPanel } from '../components/AchievementPanel';
 import { AIInsightCard } from '../components/AIInsightCard';
 import { CreateTaskDialog } from '../components/CreateTaskDialog';
+import { NotificationSettings } from '../components/NotificationSettings';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useNotifications } from '../hooks/useNotifications';
 import { Task, Project, Achievement, UserStats, AIInsight } from '../types';
 import { 
   generateSampleTasks, 
@@ -24,6 +26,7 @@ import { useToast } from '../hooks/use-toast';
 
 const Index = () => {
   const { toast } = useToast();
+  const { scheduleTaskReminders } = useNotifications();
   
   // State Management with Local Storage
   const [tasks, setTasks] = useLocalStorage<Task[]>('cyberpunk-tasks', generateSampleTasks());
@@ -39,7 +42,7 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [currentTime, setCurrentTime] = useState('');
 
-  // Update current time
+  // Update current time and schedule notifications
   useEffect(() => {
     const updateTime = () => {
       setCurrentTime(new Date().toLocaleTimeString('en-US', { 
@@ -51,8 +54,12 @@ const Index = () => {
     
     updateTime();
     const interval = setInterval(updateTime, 1000);
+    
+    // Schedule task reminders
+    scheduleTaskReminders(tasks);
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [tasks, scheduleTaskReminders]);
 
   // Task Management Functions
   const handleCreateTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -142,6 +149,14 @@ const Index = () => {
     ));
   };
 
+  const handleUpdateSubtasks = (taskId: string, subtasks: Task['subtasks']) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId 
+        ? { ...task, subtasks, updatedAt: new Date() }
+        : task
+    ));
+  };
+
   // Filter and Search Logic
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,6 +241,7 @@ const Index = () => {
                   >
                     <LayoutGrid className="w-4 h-4" />
                   </Button>
+                  <NotificationSettings />
                   <CreateTaskDialog onCreateTask={handleCreateTask} projects={projects} />
                 </div>
               </div>
@@ -267,6 +283,7 @@ const Index = () => {
                         onToggleComplete={handleToggleComplete}
                         onEdit={handleEditTask}
                         onDelete={handleDeleteTask}
+                        onUpdateSubtasks={handleUpdateSubtasks}
                       />
                     ))}
                   </div>
