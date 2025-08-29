@@ -46,7 +46,7 @@ A revolutionary productivity application that combines cutting-edge AI assistanc
 1. **Clone the Repository**
    ```bash
    git clone <repository-url>
-   cd cybertask-todo-calendar
+   cd productivity-unchained
    ```
 
 2. **Install Dependencies**
