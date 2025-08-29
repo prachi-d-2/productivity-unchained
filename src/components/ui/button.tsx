@@ -18,6 +18,9 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        gaming: "gaming-button",
+        cyber: "relative overflow-hidden px-6 py-3 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-[0_0_20px_hsl(var(--primary)/0.5)] hover:scale-105",
+        neon: "bg-background border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:shadow-[0_0_15px_hsl(var(--primary)/0.4)]",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -1,96 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Cyberpunk Gaming Design System - All colors MUST be HSL */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Cyberpunk Dark Theme */
+    --background: 220 100% 2%;
+    --foreground: 180 100% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 50% 5%;
+    --card-foreground: 180 100% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 50% 5%;
+    --popover-foreground: 180 100% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Neon Cyan Primary */
+    --primary: 180 100% 50%;
+    --primary-foreground: 220 100% 2%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Electric Purple Secondary */
+    --secondary: 270 100% 70%;
+    --secondary-foreground: 180 100% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Dark Muted Tones */
+    --muted: 220 50% 10%;
+    --muted-foreground: 180 50% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Neon Green Accent */
+    --accent: 120 100% 50%;
+    --accent-foreground: 220 100% 2%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Neon Red Destructive */
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 180 100% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Warning Yellow */
+    --warning: 60 100% 50%;
+    --warning-foreground: 220 100% 2%;
 
-    --radius: 0.5rem;
+    --border: 220 50% 15%;
+    --input: 220 50% 8%;
+    --ring: 180 100% 50%;
 
-    --sidebar-background: 0 0% 98%;
+    --radius: 0.75rem;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Gaming Progress Colors */
+    --progress-bg: 220 50% 8%;
+    --progress-fill: 180 100% 50%;
+    --xp-bar: 120 100% 50%;
+    --health-bar: 0 100% 50%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Cyberpunk Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(180 100% 50%) 0%, hsl(270 100% 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(270 100% 70%) 0%, hsl(300 100% 60%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(120 100% 50%) 0%, hsl(180 100% 50%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 50% 5%) 0%, hsl(220 50% 8%) 100%);
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Neon Glows */
+    --glow-primary: 0 0 20px hsl(180 100% 50% / 0.5);
+    --glow-secondary: 0 0 20px hsl(270 100% 70% / 0.5);
+    --glow-accent: 0 0 20px hsl(120 100% 50% / 0.5);
+    --glow-warning: 0 0 20px hsl(60 100% 50% / 0.5);
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Animations */
+    --transition-cyber: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-glow: box-shadow 0.3s ease-in-out;
+  }
+}
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+@layer base {
+  * {
+    @apply border-border;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  body {
+    @apply bg-background text-foreground font-exo antialiased;
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(180 100% 50% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(270 100% 70% / 0.1) 0%, transparent 50%);
+  }
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-orbitron font-semibold;
+  }
+}
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+@layer components {
+  /* Gaming UI Components */
+  .cyber-card {
+    @apply bg-card border border-border rounded-lg p-6 shadow-lg;
+    background: var(--gradient-card);
+    transition: var(--transition-cyber);
+  }
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+  .cyber-card:hover {
+    box-shadow: var(--glow-primary);
+    transform: translateY(-2px);
+  }
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+  .neon-border {
+    border: 1px solid hsl(var(--primary));
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+  }
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+  .neon-text {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+  .progress-bar {
+    @apply w-full h-3 rounded-full overflow-hidden;
+    background: var(--progress-bg);
+  }
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: var(--gradient-primary);
+    box-shadow: var(--glow-primary);
+  }
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .achievement-badge {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium;
+    background: var(--gradient-accent);
+    color: hsl(var(--accent-foreground));
+    box-shadow: var(--glow-accent);
+  }
+
+  .priority-high {
+    @apply border-l-4;
+    border-left-color: hsl(var(--destructive));
+    box-shadow: -4px 0 8px hsl(var(--destructive) / 0.3);
+  }
+
+  .priority-medium {
+    @apply border-l-4;
+    border-left-color: hsl(var(--warning));
+    box-shadow: -4px 0 8px hsl(var(--warning) / 0.3);
+  }
+
+  .priority-low {
+    @apply border-l-4;
+    border-left-color: hsl(var(--accent));
+    box-shadow: -4px 0 8px hsl(var(--accent) / 0.3);
+  }
+
+  .gaming-button {
+    @apply relative overflow-hidden px-6 py-3 rounded-lg font-medium transition-all duration-300;
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .gaming-button:hover {
+    box-shadow: var(--glow-primary);
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  .gaming-button::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+  }
+
+  .gaming-button:hover::before {
+    @apply opacity-100;
+    animation: shine 0.6s ease-in-out;
+  }
+
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 }
 
